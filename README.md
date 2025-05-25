@@ -50,22 +50,9 @@ PnPHistorian/
 └── README.md         # (diese Datei)
 ```
 
-### 1.2: Compose-Version entfernen
-
-Öffne `docker-compose.yml` und entferne die erste Zeile:
-
-```diff
--version: "3.8"
- services:
-   chroma:
-     image: chromadb/chroma:latest
-```
-
----
-
 ## 2. Docker-Services starten
 
-Nutze das neue Compose‑Plugin:
+Docker container hochfahren:
 
 ```bash
 docker compose up -d
