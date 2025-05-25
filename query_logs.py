@@ -49,26 +49,35 @@ def chat(system_msg: str, user_msg: str):
     )
     resp.raise_for_status()
     data = resp.json()
-    # OpenAI-kompatible Antwortstruktur
     return data["choices"][0]["message"]["content"]
 
 if __name__ == "__main__":
     # Frage einlesen
     prompt = " ".join(sys.argv[1:]) or input("Frage: ")
 
-    # Embedding erzeugen
+    # 1) Embedding der Frage holen
     q_emb = embed(prompt)
 
-    # Retrieval
+    # 2) Retrieval relevanter Dokumente
     results = coll.query(query_embeddings=[q_emb], n_results=3)
     docs = results["documents"][0]
     context = "\n---\n".join(docs)
 
-    # Antwort generieren
-    full_prompt = (
-        f"Verwende die folgenden Log-Einträge als Kontext:\n\n{context}"
-        f"\n\nBeantworte dann die Frage: {prompt}"
+    # 3) Prompt für Curse of Strahd DnD 5e mit Spieler-Info verfeinern
+    system_prompt = (
+        "Du bist ein erfahrener Dungeons & Dragons 5e Assistent für die Kampagne 'Curse of Strahd'. "
+        "Nutze ausschließlich die bereitgestellten Log-Einträge als Wissensquelle. "
+        "Die Spieler und ihre Charaktere sind: "
+        "Kevin spielt Alril, Patrick spielt Dendros, Olli spielt Alwyn, Fabi spielt Wellys, "
+        "Max spielt Daeran; Grumsh und Hansrik sind NSCs; Lexa spielt Moosnager, Gretel und Glim. "
+        "Antworte stets auf Deutsch, es sei denn, die Frage ist in einer anderen Sprache gestellt."
     )
-    answer = chat("Du bist ein hilfreicher Agent.", full_prompt)
+    user_prompt = (
+        f"Verwende die folgenden Log-Einträge als Kontext für Curse of Strahd (D&D 5e):\n{context}\n\n"
+        f"Frage: {prompt}"
+    )
+
+    # 4) Antwort generieren
+    answer = chat(system_prompt, user_prompt)
 
     print("\n➡️ Antwort:\n", answer)
